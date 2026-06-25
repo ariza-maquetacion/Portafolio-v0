@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor Comparativo Sincronizado</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: sans-serif; }
+        .header-bar { height: 40px; background: #522615; color: white; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; }
+        .header-bar a { color: white; text-decoration: none; font-weight: bold; }
+        .contenedor-principal { display: flex; height: calc(100% - 40px); width: 100%; }
+        .panel { width: 50%; height: 100%; overflow-y: scroll; position: relative; }
+        .panel-izquierdo { border-right: 2px solid #ccc; background: #fff; }
+        .panel-derecho { background: #666; }
+        iframe { width: 100%; height: 100%; border: none; }
+        object { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <a href="index.html">← Volver a la Portada</a>
+        <span>Control de Calidad: Versión HTML5 (Izquierda) vs PDF Original (Derecha)</span>
+        <div></div>
+    </div>
+
+    <div class="contenedor-principal">
+        <!-- Panel Izquierdo: HTML Maquetado -->
+        <div class="panel panel-izquierdo" id="panelHTML">
+            <iframe id="iframeHTML"></iframe>
+        </div>
+
+        <!-- Panel Derecho: PDF Original -->
+        <div class="panel panel-derecho" id="panelPDF">
+            <!-- Nota: Si requiere scroll milimétrico exacto, aquí se sustituye por el visor de PDF.js -->
+            <iframe id="iframePDF"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // 1. Capturar el artículo desde la URL (Parámetro ?art=)
+        const params = new URLSearchParams(window.location.search);
+        const articuloId = params.get('art') || 'articulo-1';
+
+        // 2. Asignar rutas dinámicas
+        document.getElementById('iframeHTML').src = `${articuloId}/articulo.html`;
+        document.getElementById('iframePDF').src = `${articuloId}/articulo.pdf`;
+
+        // 3. Script de Sincronización de Scroll por Porcentaje
+        const panelHTML = document.getElementById('panelHTML');
+        const panelPDF = document.getElementById('panelPDF');
+
+        let scrollActivo = null;
+
+        function sincronizarScroll(origen, destino) {
+            if (scrollActivo !== origen) return;
+            
+            // Calcular porcentaje de scroll del contenedor de origen
+            const maxScrollOrigen = origen.scrollHeight - origen.clientHeight;
+            if (maxScrollOrigen <= 0) return;
+            const porcentaje = origen.scrollTop / maxScrollOrigen;
+
+            // Aplicar el mismo porcentaje al contenedor de destino
+            const maxScrollDestino = destino.scrollHeight - destino.clientHeight;
+            destino.scrollTop = porcentaje * maxScrollDestino;
+        }
+
+        // Detectar cuál panel está moviendo activamente el usuario
+        panelHTML.addEventListener('mouseenter', () => scrollActivo = panelHTML);
+        panelPDF.addEventListener('mouseenter', () => scrollActivo = panelPDF);
+
+        panelHTML.addEventListener('scroll', () => sincronizarScroll(panelHTML, panelPDF));
+        panelPDF.addEventListener('scroll', () => sincronizarScroll(panelPDF, panelHTML));
+    </script>
+
+</body>
+</html>
